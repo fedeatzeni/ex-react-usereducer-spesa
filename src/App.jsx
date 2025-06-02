@@ -13,10 +13,33 @@ function App() {
   console.log(addedProducts)
 
   function addToCart(product) {
-    if (!addedProducts.find(p => p.name === product.name)) {
+    const p = addedProducts.find(p => p.name === product.name)
+    if (!p) {
       setAddedProducts([...addedProducts, { ...product, quantity: 1 }])
     }
+    else { updateProductQuantity(p) }
   }
+
+  function updateProductQuantity(product) {
+    setAddedProducts(addedProducts.map(p => {
+      if (p.name === product.name) {
+        return { ...p, quantity: p.quantity + 1 };
+      }
+      else return p
+    }));
+  }
+
+  function removeFromCart(product) {
+    setAddedProducts(addedProducts.filter(p => { if (p !== product) return p }))
+  }
+
+  function sum() {
+    const list = addedProducts.map(p => p.price * p.quantity)
+    let sum = 0;
+    list.forEach(el => { sum += el });
+    return sum
+  }
+
 
   return (
     <>
@@ -38,9 +61,13 @@ function App() {
           {addedProducts.map((product, index) => (
             <li key={index}>
               <p>{`${product.quantity}x ${product.name} (${product.price.toFixed(2)}€)`}</p>
+
+              <button onClick={() => removeFromCart(product)}>Rimuovi dal carrello</button>
             </li>
           ))}
         </ul>
+        <h2>Totale: </h2>
+        <span>{`${sum().toFixed(2)}€`}</span>
       </>}
 
     </>
