@@ -1,5 +1,35 @@
 import { useState, useReducer } from "react";
 
+function cartReducer(addedProducts, action) {
+  switch (action.type) {
+
+    case 'ADD_ITEM': {
+      const existingProduct = addedProducts.find(p => p.name === action.payload.name);
+      if (existingProduct) {
+        return addedProducts.map(p => p.name === action.payload.name ? { ...p, quantity: p.quantity + 1 } : p);
+      }
+      else {
+        return [...addedProducts, { ...action.payload, quantity: 1 }];
+      }
+    }
+
+    case 'UPDATE_QUANTITY': {
+      const { name, quantity } = action.payload;
+      if (quantity < 1 || isNaN(quantity)) return addedProducts;
+      return addedProducts.map(p =>
+        p.name === name ? { ...p, quantity } : p
+      );
+    }
+
+    case 'REMOVE_ITEM':
+      return addedProducts.filter(p => p.name !== action.payload);
+
+    default:
+      return addedProducts;
+  }
+}
+
+
 function App() {
 
   const products = [
@@ -9,33 +39,11 @@ function App() {
     { name: 'Pasta', price: 0.7 },
   ];
 
-  const [addedProducts, setAddedProducts] = useState([]);
-  console.log(addedProducts)
-
-  function addToCart(product) {
-    const p = addedProducts.find(p => p.name === product.name)
-    if (!p) {
-      setAddedProducts([...addedProducts, { ...product, quantity: 1 }])
-    }
-    else { updateProductQuantity(p, p.quantity + 1); }
-  }
-
-  function updateProductQuantity(product, quantity) {
-    if (quantity < 1 || isNaN(quantity)) return;
-    setAddedProducts(addedProducts.map(p =>
-      product.name === p.name ? { ...p, quantity } : p
-    ));
-  }
-
-  function removeFromCart(product) {
-    setAddedProducts(addedProducts.filter(p => { if (p !== product) return p }))
-  }
+  const [addedProducts, dispatchCart] = useReducer(cartReducer, []);
+  // console.log(addedProducts)
 
   function sum() {
-    const list = addedProducts.map(p => p.price * p.quantity)
-    let sum = 0;
-    list.forEach(el => { sum += el });
-    return sum
+    return addedProducts.reduce((acc, p) => acc + p.price * p.quantity, 0);
   }
 
 
@@ -47,7 +55,7 @@ function App() {
           <li key={index}>
             <p>{`${product.name} (${product.price.toFixed(2)}€)`}</p>
 
-            <button onClick={() => addToCart(product)}>Aggiungi al carrello</button>
+            <button onClick={() => dispatchCart({ type: 'ADD_ITEM', payload: product })}>Aggiungi al carrello</button>
           </li>
         ))}
       </ul>
@@ -59,10 +67,20 @@ function App() {
           {addedProducts.map((product, index) => (
             <li key={index}>
               {/* <p>{`${product.quantity}x ${product.name} (${product.price.toFixed(2)}€)`}</p> */}
-              <input type="number" min={1} value={product.quantity} onChange={(e) => updateProductQuantity(product, parseInt(e.target.value))} />
+              <input
+                type="number"
+                min={1}
+                value={product.quantity}
+                onChange={(e) =>
+                  dispatchCart({
+                    type: 'UPDATE_QUANTITY',
+                    payload: { name: product.name, quantity: parseInt(e.target.value) },
+                  })
+                }
+              />
               <p>{`${product.name} (${product.price.toFixed(2)}€)`}</p>
 
-              <button onClick={() => removeFromCart(product)}>Rimuovi dal carrello</button>
+              <button onClick={() => dispatchCart({ type: 'REMOVE_ITEM', payload: product.name })}>Rimuovi dal carrello</button>
             </li>
           ))}
         </ul>
