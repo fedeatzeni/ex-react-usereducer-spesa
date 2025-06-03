@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useReducer } from "react";
 
 function App() {
 
@@ -17,17 +17,14 @@ function App() {
     if (!p) {
       setAddedProducts([...addedProducts, { ...product, quantity: 1 }])
     }
-    else { updateProductQuantity(p) }
+    else { updateProductQuantity(p, p.quantity + 1); }
   }
 
-  function updateProductQuantity(product, value) {
-    setAddedProducts(addedProducts.map(p => {
-      if (p.name === product.name) {
-        // return { ...p, quantity: p.quantity + 1 };
-        return { ...p, quantity: parseInt(value) };
-      }
-      else return p
-    }));
+  function updateProductQuantity(product, quantity) {
+    if (quantity < 1 || isNaN(quantity)) return;
+    setAddedProducts(addedProducts.map(p =>
+      product.name === p.name ? { ...p, quantity } : p
+    ));
   }
 
   function removeFromCart(product) {
@@ -62,7 +59,7 @@ function App() {
           {addedProducts.map((product, index) => (
             <li key={index}>
               {/* <p>{`${product.quantity}x ${product.name} (${product.price.toFixed(2)}€)`}</p> */}
-              <input type="number" min={1} value={product.quantity} onChange={(e) => updateProductQuantity(product, e.target.value)} />
+              <input type="number" min={1} value={product.quantity} onChange={(e) => updateProductQuantity(product, parseInt(e.target.value))} />
               <p>{`${product.name} (${product.price.toFixed(2)}€)`}</p>
 
               <button onClick={() => removeFromCart(product)}>Rimuovi dal carrello</button>
