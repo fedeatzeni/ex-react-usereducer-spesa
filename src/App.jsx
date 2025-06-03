@@ -20,10 +20,11 @@ function App() {
     else { updateProductQuantity(p) }
   }
 
-  function updateProductQuantity(product) {
+  function updateProductQuantity(product, value) {
     setAddedProducts(addedProducts.map(p => {
       if (p.name === product.name) {
-        return { ...p, quantity: p.quantity + 1 };
+        // return { ...p, quantity: p.quantity + 1 };
+        return { ...p, quantity: parseInt(value) };
       }
       else return p
     }));
@@ -60,7 +61,9 @@ function App() {
         <ul>
           {addedProducts.map((product, index) => (
             <li key={index}>
-              <p>{`${product.quantity}x ${product.name} (${product.price.toFixed(2)}€)`}</p>
+              {/* <p>{`${product.quantity}x ${product.name} (${product.price.toFixed(2)}€)`}</p> */}
+              <input type="number" min={1} value={product.quantity} onChange={(e) => updateProductQuantity(product, e.target.value)} />
+              <p>{`${product.name} (${product.price.toFixed(2)}€)`}</p>
 
               <button onClick={() => removeFromCart(product)}>Rimuovi dal carrello</button>
             </li>
